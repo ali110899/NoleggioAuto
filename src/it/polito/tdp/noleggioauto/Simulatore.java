@@ -2,6 +2,8 @@ package it.polito.tdp.noleggioauto;
 
 import java.util.PriorityQueue;
 
+import it.polito.tdp.noleggioauto.Event.EventType;
+
 public class Simulatore {
 	
 	// Modello del mondo
@@ -37,10 +39,46 @@ public class Simulatore {
 	
 	public void run() {
 		
+		while(!this.queue.isEmpty()) {
+			Event e = this.queue.poll() ;
+			int time = e.getTime() ;
+			EventType type = e.getType() ;
+			System.out.println(e.getType()+" al tempo "+time) ;
+			
+			switch(type) {
+			case NUOVO_CLIENTE:
+				
+				if(nAuto>0) {
+					// ok, affitto auto
+					this.TOT_CLIENTI ++ ;
+					this.nAuto -- ;
+					
+					int durata = this.T_TRAVEL * (int)(1+ Math.random()*this.MULT_TRAVEL);
+					this.queue.add(new Event(time+durata, EventType.RESTITUZIONE_AUTO)) ;
+					
+				} else {
+					// no, cliente insoddisfatto
+					this.TOT_CLIENTI ++ ;
+					this.TOT_INSODDISFATTI ++ ;
+				}
+				
+				break;
+				
+			case RESTITUZIONE_AUTO:
+				
+				this.nAuto ++ ;
+				
+				break;
+			}
+		}
+		
 	}
 	
 	public void initialize() {
 		// simula l'arrivo dei clienti, uno ogni T_IN
+		for(int time=0; time<8*60; time=time+T_IN) {
+			this.queue.add(new Event(time, EventType.NUOVO_CLIENTE)) ;
+		}
 	}
 
 	public int getTOT_CLIENTI() {
